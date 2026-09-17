@@ -1,0 +1,23 @@
+---
+titulo: "Rastreando Gargalos Silenciosos com OpenTelemetry"
+resumo: "Introdução prática ao uso de spans e traces para diagnosticar latência em rotas de alta carga."
+data: "2026-09-17"
+tags: ["Infra", "Bastidores"]
+tecnologias: ["OpenTelemetry", "Go", "Docker"]
+---
+
+Logs convencionais mostram *o que* deu errado em um ponto fixo, mas não mostram *quanto tempo* cada etapa de uma requisição demorou atravessando o ecossistema.
+
+### Como funciona um Trace
+
+Um **Trace** é composto por uma árvore de **Spans**, onde cada span representa uma unidade de trabalho com início e fim demarcados:
+
+<Mermaid chart={`graph TD
+Root[HTTP POST /pedidos (Total: 120ms)] --> Auth[Auth Middleware (10ms)]
+Root --> DB[Query Postgres (85ms)]
+Root --> Queue[Publicar Evento Broker (15ms)]`} />
+
+### O que observar ao instrumentar
+
+- **Context Propagation:** Garantir que o cabeçalho de rastreamento seja passado adiante em todas as chamadas internas.
+- **Overhead:** Instrumentar chamadas I/O críticas sem criar spans microscópicos para operações em memória pura.
