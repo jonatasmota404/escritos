@@ -1,0 +1,25 @@
+---
+titulo: "Implementando Resiliência em Microsserviços com Circuit Breaker"
+resumo: "Como evitar falhas em cascata utilizando o padrão Circuit Breaker em APIs Node.js."
+data: "2026-09-17"
+tags: ["Backend"]
+tecnologias: ["Node.js", "TypeScript", "NestJS"]
+---
+
+Quando serviços distribuídos dependem uns dos outros de forma síncrona, uma lentidão pontual pode causar colapso sistêmico. O padrão **Circuit Breaker** existe para interromper chamadas fadadas ao fracasso antes que elas consumam todos os recursos da aplicação.
+
+### O Ciclo de Estados
+
+O circuito opera em três estados fundamentais:
+
+<Mermaid chart={`graph LR
+Fechado[Fechado: Fluxo Normal] -->|Falhas consecutivas excedem o limite| Aberto[Aberto: Rejeição Rápida]
+Aberto -->|Janela de tempo expira| MeioAberto[Meio-Aberto: Teste de Requisição]
+MeioAberto -->|Sucesso| Fechado
+MeioAberto -->|Falha| Aberto`} />
+
+### Por que aplicar em produção?
+
+- **Fail-Fast:** Não deixa conexões penduradas esperando timeout de 30 segundos.
+- **Auto-recuperação:** Permite que o serviço externo instável se recupere sem receber uma enxurrada contínua de tráfego.
+- **Degradação Elegante:** Facilita retornar dados de cache ou um fallback controlado para o usuário.
