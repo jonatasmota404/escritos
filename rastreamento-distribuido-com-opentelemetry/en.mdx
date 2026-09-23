@@ -1,0 +1,23 @@
+---
+titulo: "Tracing Silent Bottlenecks with OpenTelemetry"
+resumo: "A practical introduction to using spans and traces to diagnose latency in high-load routes."
+data: "2026-09-17"
+tags: ["Infra", "Behind the Scenes"]
+tecnologias: ["OpenTelemetry", "Go", "Docker"]
+---
+
+Conventional logs show *what* went wrong at a fixed point, but not *how long* each step of a request took as it moved through the ecosystem.
+
+### How a Trace Works
+
+A **Trace** is made up of a tree of **Spans**, where each span represents a unit of work with a marked start and end:
+
+<Mermaid chart={`graph TD
+Root[HTTP POST /orders (Total: 120ms)] --> Auth[Auth Middleware (10ms)]
+Root --> DB[Query Postgres (85ms)]
+Root --> Queue[Publish Broker Event (15ms)]`} />
+
+### What to Watch For When Instrumenting
+
+- **Context Propagation:** Make sure the tracing header is passed along through every internal call.
+- **Overhead:** Instrument critical I/O calls without creating microscopic spans for purely in-memory operations.

@@ -1,0 +1,26 @@
+---
+titulo: "Optimizing Production Images with Docker Multi-Stage Builds"
+resumo: "Simple strategies to shrink container images from 1GB down to under 100MB."
+data: "2026-09-17"
+tags: ["Infra"]
+tecnologias: ["Docker", "Linux"]
+---
+
+In CI/CD pipelines, the size of the final image directly affects deploy time, node startup speed, and network traffic costs.
+
+### The Multi-Stage Principle
+
+We separate the build environment (which requires compilers, type-checking tools, and heavy development dependencies) from the minimal final runtime environment:
+
+<PlacaSvg titulo="Build Pipeline vs Runtime" viewBox="0 0 400 120">
+  <TracoSvg as="line" x1={20} y1={60} x2={160} y2={60} />
+  <TracoSvg as="circle" cx={160} cy={60} r={25} />
+  <TracoSvg as="line" x1={185} y1={60} x2={300} y2={60} />
+  <TracoSvg as="circle" cx={300} cy={60} r={15} />
+</PlacaSvg>
+
+### Practical Benefits
+
+1. **Security:** The production container doesn't carry build tools that could be exploited after a breach.
+2. **Layer Caching:** Dependencies that change less frequently sit in isolated layers, speeding up CI caching.
+3. **Lightness:** Final images based on minimal distros (like Alpine or distroless) start up almost instantly.

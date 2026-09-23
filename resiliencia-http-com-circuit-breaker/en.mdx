@@ -1,0 +1,25 @@
+---
+titulo: "Implementing Resilience in Microservices with Circuit Breaker"
+resumo: "How to prevent cascading failures using the Circuit Breaker pattern in Node.js APIs."
+data: "2026-09-17"
+tags: ["Backend"]
+tecnologias: ["Node.js", "TypeScript", "NestJS"]
+---
+
+When distributed services depend on each other synchronously, a single point of slowness can cause systemic collapse. The **Circuit Breaker** pattern exists to stop calls that are doomed to fail before they consume all of the application's resources.
+
+### The State Cycle
+
+The circuit operates in three fundamental states:
+
+<Mermaid chart={`graph LR
+Closed[Closed: Normal Flow] -->|Consecutive failures exceed threshold| Open[Open: Fast Rejection]
+Open -->|Time window expires| HalfOpen[Half-Open: Test Request]
+HalfOpen -->|Success| Closed
+HalfOpen -->|Failure| Open`} />
+
+### Why Use It in Production?
+
+- **Fail-Fast:** Avoids leaving connections hanging while waiting on a 30-second timeout.
+- **Self-Recovery:** Lets the unstable external service recover without being hit by a continuous flood of traffic.
+- **Graceful Degradation:** Makes it easier to return cached data or a controlled fallback to the user.
