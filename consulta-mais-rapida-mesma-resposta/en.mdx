@@ -1,0 +1,29 @@
+---
+titulo: "A Faster Query Is Only Better If It Gives the Same Answer"
+resumo: "How I removed an N+1 from a Go list page by copying a business rule into SQL, and the test that keeps the copy honest."
+data: "2026-10-29"
+tags: ["Backend"]
+tecnologias: ["Go", "PostgreSQL"]
+---
+
+The orders list in a management system I run in production called one Go function per card to get the total and the balance. A classic N+1: one query for the list, then N more for the cards.
+
+The obvious fix is a single query with a `LEFT JOIN LATERAL` that computes the totals for every order at once. The catch is that the discount rule already lived in Go: percentage or frozen value, with or without supplies in the base, rounded to cents. The SQL had to copy it.
+
+### Two copies of a rule will drift
+
+I kept the Go function as the single source of truth and wrote a test around it. The test creates orders in 13 configurations (percentage discount, fixed value, a legacy `NULL` source, with and without supplies, partial payment, forgiven debt, a half-cent rounding tie) and runs both paths. Total, balance and "paid" from the list query must match the Go function within a fraction of a cent.
+
+If they differ, the SQL is wrong. Never the test.
+
+### The first version still had a hole
+
+An order with no services has a total of 0 and a balance of 0, so the list marked it as paid. Zero minus zero is zero, but nothing had been charged. I fixed it by requiring a real charge before an order can count as paid, and added that case to the same test.
+
+I only found it because I looked at the list after the change, not because the 13 cases caught it. The test checks the cases you thought of.
+
+### Same answer is its own claim
+
+"Faster" and "correct" are separate claims, and only one of them shows up in a profiler. Last month a database was removed from the ClickBench benchmark after the maintainer's pull request said its results came from code written for the 43 benchmark queries and from replaying cached answers ([PR #2165](https://github.com/ClickHouse/ClickBench/pull/2165), [discussion on Hacker News](https://news.ycombinator.com/item?id=50205816)). I can't judge that case. But the lesson scales down to a list page: a speedup you haven't compared to the slow path is a guess.
+
+This is not free. A rule duplicated in SQL has a maintenance cost, and if that rule changes often, I would move it to one place instead of testing two. For a rule that is stable and money-related, the test was cheaper.
